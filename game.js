@@ -93,8 +93,17 @@ const pacman = { x: 0, y: 0, dir: { x: 0, y: 0 }, next: { x: 0, y: 0 }, speed: 9
 const ghosts = [];
 const audio = {
   ctx: null,
+  master: null,
   muted: false,
-  ensure() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+  ensure() {
+    if (!this.ctx) {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = 0.8;
+      this.master.connect(this.ctx.destination);
+    }
+  },
+  resume() { this.ensure(); if (this.ctx.state === 'suspended') this.ctx.resume(); },
   tone(f, t, type, v) {
     if (this.muted) return;
     this.ensure();
@@ -104,12 +113,12 @@ const audio = {
     o.type = type || 'sine';
     o.frequency.value = f;
     g.gain.setValueAtTime(0, now);
-    g.gain.linearRampToValueAtTime(v || 0.06, now + 0.01);
-    g.gain.linearRampToValueAtTime(0, now + (t || 0.12));
+    g.gain.linearRampToValueAtTime(v || 0.09, now + 0.01);
+    g.gain.linearRampToValueAtTime(0, now + (t || 0.14));
     o.connect(g);
-    g.connect(this.ctx.destination);
+    g.connect(this.master || this.ctx.destination);
     o.start(now);
-    o.stop(now + (t || 0.12));
+    o.stop(now + (t || 0.14));
   },
   pellet() { this.tone(880, 0.08, 'square', 0.05); },
   power() { this.tone(660, 0.18, 'sawtooth', 0.07); },
@@ -473,7 +482,7 @@ document.addEventListener('keydown', e => {
 startBtn.addEventListener('click', () => {
   resetGame();
   running = true;
-  audio.ensure();
+  audio.resume();
   audio.start();
 });
 pauseBtn.addEventListener('click', () => {
@@ -483,30 +492,31 @@ if (restartBtn) {
 restartBtn.addEventListener('click', () => {
   resetGame();
   running = true;
+  audio.resume();
 });
 }
 if (soundBtn) {
   soundBtn.addEventListener('click', () => {
-    audio.ensure();
+    audio.resume();
     audio.muted = !audio.muted;
     soundBtn.textContent = audio.muted ? 'Suara: Off' : 'Suara: On';
   });
 }
 if (btnLeft) {
-  btnLeft.addEventListener('click', () => { pacman.next = { x: -1, y: 0 }; });
-  btnLeft.addEventListener('touchstart', e => { e.preventDefault(); pacman.next = { x: -1, y: 0 }; });
+  btnLeft.addEventListener('click', () => { audio.resume(); pacman.next = { x: -1, y: 0 }; });
+  btnLeft.addEventListener('touchstart', e => { e.preventDefault(); audio.resume(); pacman.next = { x: -1, y: 0 }; });
 }
 if (btnRight) {
-  btnRight.addEventListener('click', () => { pacman.next = { x: 1, y: 0 }; });
-  btnRight.addEventListener('touchstart', e => { e.preventDefault(); pacman.next = { x: 1, y: 0 }; });
+  btnRight.addEventListener('click', () => { audio.resume(); pacman.next = { x: 1, y: 0 }; });
+  btnRight.addEventListener('touchstart', e => { e.preventDefault(); audio.resume(); pacman.next = { x: 1, y: 0 }; });
 }
 if (btnUp) {
-  btnUp.addEventListener('click', () => { pacman.next = { x: 0, y: -1 }; });
-  btnUp.addEventListener('touchstart', e => { e.preventDefault(); pacman.next = { x: 0, y: -1 }; });
+  btnUp.addEventListener('click', () => { audio.resume(); pacman.next = { x: 0, y: -1 }; });
+  btnUp.addEventListener('touchstart', e => { e.preventDefault(); audio.resume(); pacman.next = { x: 0, y: -1 }; });
 }
 if (btnDown) {
-  btnDown.addEventListener('click', () => { pacman.next = { x: 0, y: 1 }; });
-  btnDown.addEventListener('touchstart', e => { e.preventDefault(); pacman.next = { x: 0, y: 1 }; });
+  btnDown.addEventListener('click', () => { audio.resume(); pacman.next = { x: 0, y: 1 }; });
+  btnDown.addEventListener('touchstart', e => { e.preventDefault(); audio.resume(); pacman.next = { x: 0, y: 1 }; });
 }
 let touchStartX = 0;
 let touchStartY = 0;
@@ -514,7 +524,7 @@ canvas.addEventListener('touchstart', e => {
   const t = e.changedTouches[0];
   touchStartX = t.clientX;
   touchStartY = t.clientY;
-  audio.ensure();
+  audio.resume();
 }, { passive: true });
 canvas.addEventListener('touchend', e => {
   e.preventDefault();

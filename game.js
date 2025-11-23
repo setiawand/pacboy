@@ -465,12 +465,13 @@ canvas.addEventListener('touchstart', e => {
   touchStartY = t.clientY;
 }, { passive: true });
 canvas.addEventListener('touchend', e => {
+  e.preventDefault();
   const t = e.changedTouches[0];
   const dx = t.clientX - touchStartX;
   const dy = t.clientY - touchStartY;
   const ax = Math.abs(dx);
   const ay = Math.abs(dy);
-  const thr = 24;
+  const thr = 36;
   if (ax < thr && ay < thr) return;
   if (ax > ay) {
     pacman.next = { x: dx > 0 ? 1 : -1, y: 0 };

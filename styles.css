@@ -47,6 +47,7 @@ body {
   width: 100%;
   max-width: 95vw;
   height: auto;
+  touch-action: none;
 }
 .overlay {
   position: fixed;
@@ -82,29 +83,35 @@ body {
 .mobile-controls {
   display: none;
   padding: 12px;
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 1000;
+  --btn: clamp(72px, 16vw, 96px);
 }
 .dpad {
   display: grid;
-  grid-template-columns: 64px 64px 64px;
-  grid-template-rows: 64px 64px 64px;
-  gap: 8px;
+  grid-template-columns: var(--btn) var(--btn) var(--btn);
+  grid-template-rows: var(--btn) var(--btn) var(--btn);
+  gap: 12px;
   justify-content: center;
   align-items: center;
 }
 .dpad button {
-  width: 64px;
-  height: 64px;
+  width: var(--btn);
+  height: var(--btn);
   background: #222;
   color: #fff;
   border: 1px solid #333;
   border-radius: 12px;
-  font-size: 24px;
+  font-size: 28px;
+  touch-action: manipulation;
 }
 .dpad .middle {
   grid-column: 2 / 3;
   display: grid;
-  grid-template-columns: 64px 64px;
-  gap: 8px;
+  grid-template-columns: var(--btn) var(--btn);
+  gap: 12px;
 }
 #btnUp { grid-column: 2 / 3; grid-row: 1 / 2; }
 #btnDown { grid-column: 2 / 3; grid-row: 3 / 4; }

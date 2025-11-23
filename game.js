@@ -77,6 +77,7 @@ const btnLeft = document.getElementById("btnLeft");
 const btnRight = document.getElementById("btnRight");
 const btnUp = document.getElementById("btnUp");
 const btnDown = document.getElementById("btnDown");
+const soundBtn = document.getElementById("sound");
 let score = 0;
 let lives = 3;
 let running = false;
@@ -90,6 +91,32 @@ const SPAWN = { c: 9, r: 6 };
 let gameOver = false;
 const pacman = { x: 0, y: 0, dir: { x: 0, y: 0 }, next: { x: 0, y: 0 }, speed: 90, mouth: 0 };
 const ghosts = [];
+const audio = {
+  ctx: null,
+  muted: false,
+  ensure() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); },
+  tone(f, t, type, v) {
+    if (this.muted) return;
+    this.ensure();
+    const now = this.ctx.currentTime;
+    const o = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    o.type = type || 'sine';
+    o.frequency.value = f;
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(v || 0.06, now + 0.01);
+    g.gain.linearRampToValueAtTime(0, now + (t || 0.12));
+    o.connect(g);
+    g.connect(this.ctx.destination);
+    o.start(now);
+    o.stop(now + (t || 0.12));
+  },
+  pellet() { this.tone(880, 0.08, 'square', 0.05); },
+  power() { this.tone(660, 0.18, 'sawtooth', 0.07); },
+  ghost() { this.tone(440, 0.15, 'triangle', 0.08); },
+  death() { this.tone(220, 0.35, 'sine', 0.08); },
+  start() { this.tone(520, 0.22, 'square', 0.06); }
+};
 function getCol(x) { return Math.floor(x / TILE); }
 function getRow(y) { return Math.floor(y / TILE); }
 function cell(c, r) { return MAP[r][c]; }
@@ -394,9 +421,15 @@ function drawGhost(g) {
   ctx.arc(g.x + 6, g.y - 4, 4, 0, Math.PI * 2);
   ctx.fill();
 }
+let lastPellets = 0;
+let lastLives = 3;
+let lastDeadCount = 0;
+let lastFrightUntil = 0;
 function update(dt) {
   tryTurn();
   moveEntity(pacman, dt);
+  const beforePellets = pelletsLeft;
+  const beforeFright = frightenedUntil;
   eatPellet();
   const now = performance.now();
   for (const g of ghosts) {
@@ -405,7 +438,16 @@ function update(dt) {
     ghostAI(g);
     moveEntity(g, dt);
   }
+  const deadCount = ghosts.filter(g => g.dead).length;
+  if (deadCount > lastDeadCount) audio.ghost();
+  lastDeadCount = deadCount;
+  if (pelletsLeft < beforePellets) {
+    if (frightenedUntil > beforeFright) audio.power(); else audio.pellet();
+  }
+  const beforeLives = lastLives;
   checkCollisions();
+  if (lives < beforeLives) audio.death();
+  lastLives = lives;
   updateHUD();
   if (pelletsLeft <= 0) advanceLevel();
 }
@@ -431,6 +473,8 @@ document.addEventListener('keydown', e => {
 startBtn.addEventListener('click', () => {
   resetGame();
   running = true;
+  audio.ensure();
+  audio.start();
 });
 pauseBtn.addEventListener('click', () => {
   running = !running;
@@ -440,6 +484,13 @@ restartBtn.addEventListener('click', () => {
   resetGame();
   running = true;
 });
+}
+if (soundBtn) {
+  soundBtn.addEventListener('click', () => {
+    audio.ensure();
+    audio.muted = !audio.muted;
+    soundBtn.textContent = audio.muted ? 'Suara: Off' : 'Suara: On';
+  });
 }
 if (btnLeft) {
   btnLeft.addEventListener('click', () => { pacman.next = { x: -1, y: 0 }; });
@@ -463,6 +514,7 @@ canvas.addEventListener('touchstart', e => {
   const t = e.changedTouches[0];
   touchStartX = t.clientX;
   touchStartY = t.clientY;
+  audio.ensure();
 }, { passive: true });
 canvas.addEventListener('touchend', e => {
   e.preventDefault();

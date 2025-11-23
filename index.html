@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pacman Web</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="topbar">
+    <div class="stats">
+      <span id="score">Skor: 0</span>
+      <span id="lives">Nyawa: 3</span>
+      <span id="level">Level: 1</span>
+    </div>
+    <div class="controls">
+      <button id="start">Mulai</button>
+      <button id="pause">Jeda</button>
+    </div>
+  </div>
+  <div class="wrapper">
+    <canvas id="game"></canvas>
+  </div>
+  <div id="overlay" class="overlay hidden">
+    <div class="panel">
+      <h1>Game Over</h1>
+      <p>Skor Akhir: <strong id="finalScore">0</strong></p>
+      <p>Level Tertinggi: <strong id="finalLevel">1</strong></p>
+      <button id="restart">Main Lagi</button>
+    </div>
+  </div>
+  <script src="game.js"></script>
+</body>
+</html>

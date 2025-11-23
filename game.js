@@ -73,6 +73,10 @@ const overlayEl = document.getElementById("overlay");
 const finalScoreEl = document.getElementById("finalScore");
 const finalLevelEl = document.getElementById("finalLevel");
 const restartBtn = document.getElementById("restart");
+const btnLeft = document.getElementById("btnLeft");
+const btnRight = document.getElementById("btnRight");
+const btnUp = document.getElementById("btnUp");
+const btnDown = document.getElementById("btnDown");
 let score = 0;
 let lives = 3;
 let running = false;
@@ -432,10 +436,47 @@ pauseBtn.addEventListener('click', () => {
   running = !running;
 });
 if (restartBtn) {
-  restartBtn.addEventListener('click', () => {
-    resetGame();
-    running = true;
-  });
+restartBtn.addEventListener('click', () => {
+  resetGame();
+  running = true;
+});
 }
+if (btnLeft) {
+  btnLeft.addEventListener('click', () => { pacman.next = { x: -1, y: 0 }; });
+  btnLeft.addEventListener('touchstart', e => { e.preventDefault(); pacman.next = { x: -1, y: 0 }; });
+}
+if (btnRight) {
+  btnRight.addEventListener('click', () => { pacman.next = { x: 1, y: 0 }; });
+  btnRight.addEventListener('touchstart', e => { e.preventDefault(); pacman.next = { x: 1, y: 0 }; });
+}
+if (btnUp) {
+  btnUp.addEventListener('click', () => { pacman.next = { x: 0, y: -1 }; });
+  btnUp.addEventListener('touchstart', e => { e.preventDefault(); pacman.next = { x: 0, y: -1 }; });
+}
+if (btnDown) {
+  btnDown.addEventListener('click', () => { pacman.next = { x: 0, y: 1 }; });
+  btnDown.addEventListener('touchstart', e => { e.preventDefault(); pacman.next = { x: 0, y: 1 }; });
+}
+let touchStartX = 0;
+let touchStartY = 0;
+canvas.addEventListener('touchstart', e => {
+  const t = e.changedTouches[0];
+  touchStartX = t.clientX;
+  touchStartY = t.clientY;
+}, { passive: true });
+canvas.addEventListener('touchend', e => {
+  const t = e.changedTouches[0];
+  const dx = t.clientX - touchStartX;
+  const dy = t.clientY - touchStartY;
+  const ax = Math.abs(dx);
+  const ay = Math.abs(dy);
+  const thr = 24;
+  if (ax < thr && ay < thr) return;
+  if (ax > ay) {
+    pacman.next = { x: dx > 0 ? 1 : -1, y: 0 };
+  } else {
+    pacman.next = { x: 0, y: dy > 0 ? 1 : -1 };
+  }
+});
 resetGame();
 requestAnimationFrame(loop);

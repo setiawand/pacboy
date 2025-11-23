@@ -44,6 +44,9 @@ body {
   border: 2px solid #222;
   border-radius: 12px;
   box-shadow: 0 0 24px rgba(255,255,0,0.2);
+  width: 100%;
+  max-width: 95vw;
+  height: auto;
 }
 .overlay {
   position: fixed;
@@ -75,3 +78,42 @@ body {
 }
 .overlay .panel button:hover { background: #333; }
 .hidden { display: none; }
+
+.mobile-controls {
+  display: none;
+  padding: 12px;
+}
+.dpad {
+  display: grid;
+  grid-template-columns: 64px 64px 64px;
+  grid-template-rows: 64px 64px 64px;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+.dpad button {
+  width: 64px;
+  height: 64px;
+  background: #222;
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 12px;
+  font-size: 24px;
+}
+.dpad .middle {
+  grid-column: 2 / 3;
+  display: grid;
+  grid-template-columns: 64px 64px;
+  gap: 8px;
+}
+#btnUp { grid-column: 2 / 3; grid-row: 1 / 2; }
+#btnDown { grid-column: 2 / 3; grid-row: 3 / 4; }
+#btnLeft { grid-column: 1 / 2; grid-row: 2 / 3; }
+#btnRight { grid-column: 3 / 4; grid-row: 2 / 3; }
+
+@media (max-width: 768px) {
+  .mobile-controls { display: block; }
+  .topbar { padding: 10px 12px; }
+  .stats span { margin-right: 12px; }
+  .controls button { padding: 6px 10px; }
+}
